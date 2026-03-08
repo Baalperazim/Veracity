@@ -1,5 +1,6 @@
 # Veracity
-Veracity is a trust layer for verified Nigerian assets and properties.
+**Nigeria’s verified RWA tokenization platform on Bags.fm**  
+*Inspired by Psalm 24:1 – “The earth is the LORD'S, and the fulness thereof...”*
 
 Veracity is a no-code platform for tokenizing verified land assets in Nigeria on Bags.fm.
 
