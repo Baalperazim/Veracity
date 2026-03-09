@@ -23,13 +23,14 @@ Creator retains full legal ownership of the physical asset under Nigerian law.
 - nft.storage (IPFS)  
 - Smile ID / NIMC integration (planned)
 
+### Status
+MVP demo ready for Bags Hackathon submission (March 2026). Nigeria-focused RWA project.
+B.Sc Cybersecurity Final year project, Abiola Ajimobi Technical University
+
+
 ## Quick Start
 
 ### Install dependencies
 
 ```bash
 pip install -r requirements.txt
-
-### Status
-MVP demo ready for Bags Hackathon submission (March 2026). Nigeria-focused RWA project.
-B.Sc Cybersecurity Final year project, Abiola Ajimobi Technical University
