@@ -28,7 +28,7 @@ MVP demo ready for Bags Hackathon submission (March 2026). Nigeria-focused RWA p
 B.Sc Cybersecurity Final year project, Abiola Ajimobi Technical University
 
 
-## Quick Start
+## Start
 
 ### Install dependencies
 
