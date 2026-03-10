@@ -1,6 +1,6 @@
 from app.models.asset import Asset, AssetType, DocumentRecord, VerificationStatus
 from app.models.audit import AuditEvent
-from app.models.verification import Attestation, DecisionStatus, VerificationCase
+from app.models.verification import Attestation, VerificationCase, VerificationCaseStatus, VerifierRole
 
 __all__ = [
     "Asset",
@@ -9,6 +9,7 @@ __all__ = [
     "DocumentRecord",
     "AuditEvent",
     "VerificationCase",
-    "DecisionStatus",
+    "VerificationCaseStatus",
+    "VerifierRole",
     "Attestation",
 ]
