@@ -1,7 +1,8 @@
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.asset import AssetType, VerificationStatus
 
@@ -18,6 +19,28 @@ class AssetRegistrationRequest(BaseModel):
     owner_reference: str = Field(min_length=3, max_length=255)
     metadata: dict = Field(default_factory=dict)
     submitted_by: str = Field(min_length=2, max_length=120)
+
+    @field_validator("country_code")
+    @classmethod
+    def validate_country_code(cls, value: str) -> str:
+        normalized = value.strip().upper()
+        if len(normalized) != 2 or not normalized.isalpha():
+            raise ValueError("country_code must be a 2-letter ISO code")
+        return normalized
+
+    @field_validator("area_sqm")
+    @classmethod
+    def validate_area_sqm(cls, value: str) -> str:
+        compact = value.strip().lower().replace(" ", "")
+        if compact.endswith("sqm"):
+            compact = compact[:-3]
+        try:
+            parsed = Decimal(compact)
+        except InvalidOperation as exc:
+            raise ValueError("area_sqm must be numeric or numeric with sqm suffix") from exc
+        if parsed <= 0:
+            raise ValueError("area_sqm must be greater than zero")
+        return value
 
 
 class AssetRegistrationResponse(BaseModel):

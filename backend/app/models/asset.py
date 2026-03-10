@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from enum import StrEnum
+from enum import Enum as PyEnum
 
 from sqlalchemy import DateTime, Enum, ForeignKey, JSON, String, Text, UniqueConstraint, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -8,12 +8,12 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 
-class AssetType(StrEnum):
+class AssetType(str, PyEnum):
     LAND = "land"
     PROPERTY = "property"
 
 
-class VerificationStatus(StrEnum):
+class VerificationStatus(str, PyEnum):
     PENDING = "pending"
     UNDER_REVIEW = "under_review"
     VERIFIED = "verified"
@@ -36,7 +36,7 @@ class Asset(Base):
     owner_reference: Mapped[str] = mapped_column(String(255), nullable=False)
     fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
     canonical_payload: Mapped[dict] = mapped_column(JSON, nullable=False)
-    metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    metadata_json: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
     current_status: Mapped[VerificationStatus] = mapped_column(
         Enum(VerificationStatus, name="verification_status"),
         nullable=False,
@@ -60,7 +60,7 @@ class DocumentRecord(Base):
     document_type: Mapped[str] = mapped_column(String(120), nullable=False)
     document_hash: Mapped[str] = mapped_column(String(128), nullable=False)
     source_reference: Mapped[str] = mapped_column(Text, nullable=True)
-    metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    metadata_json: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     asset = relationship("Asset", back_populates="documents")

@@ -1,3 +1,5 @@
+import pytest
+
 from app.models.asset import AssetType
 from app.schemas.asset import AssetRegistrationRequest
 from app.services.fingerprinting import build_canonical_asset_payload, generate_asset_fingerprint
@@ -35,3 +37,37 @@ def test_fingerprint_is_deterministic_despite_whitespace_and_case() -> None:
     fp_b = generate_asset_fingerprint(build_canonical_asset_payload(payload_b))
 
     assert fp_a == fp_b
+
+
+def test_area_must_be_positive() -> None:
+    with pytest.raises(ValueError, match="greater than zero"):
+        AssetRegistrationRequest(
+            asset_type=AssetType.LAND,
+            country_code="NG",
+            state="Lagos",
+            lga="Ikeja",
+            locality="Alausa",
+            parcel_reference="IKJ-PLT-8",
+            area_sqm="0",
+            owner_full_name="Amina Yusuf",
+            owner_reference="NIN-0099",
+            metadata={},
+            submitted_by="owner_amina",
+        )
+
+
+def test_country_code_must_be_two_letters() -> None:
+    with pytest.raises(ValueError, match="2-letter ISO"):
+        AssetRegistrationRequest(
+            asset_type=AssetType.LAND,
+            country_code="N1",
+            state="Lagos",
+            lga="Ikeja",
+            locality="Alausa",
+            parcel_reference="IKJ-PLT-8",
+            area_sqm="450",
+            owner_full_name="Amina Yusuf",
+            owner_reference="NIN-0099",
+            metadata={},
+            submitted_by="owner_amina",
+        )

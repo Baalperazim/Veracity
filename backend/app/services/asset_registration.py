@@ -1,4 +1,5 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.asset import Asset
@@ -22,7 +23,7 @@ def register_asset(db: Session, payload: AssetRegistrationRequest) -> tuple[Asse
 
     asset = Asset(
         asset_type=payload.asset_type,
-        country_code=payload.country_code.upper(),
+        country_code=payload.country_code,
         state=payload.state,
         lga=payload.lga,
         locality=payload.locality,
@@ -30,7 +31,7 @@ def register_asset(db: Session, payload: AssetRegistrationRequest) -> tuple[Asse
         area_sqm=payload.area_sqm,
         owner_full_name=payload.owner_full_name,
         owner_reference=payload.owner_reference,
-        metadata=payload.metadata,
+        metadata_json=payload.metadata,
         fingerprint=fingerprint,
         canonical_payload=canonical_payload,
     )
@@ -48,7 +49,11 @@ def register_asset(db: Session, payload: AssetRegistrationRequest) -> tuple[Asse
         event_payload={"fingerprint": fingerprint},
     )
     db.add(audit_event)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise DuplicateAssetError("An asset with this canonical fingerprint already exists") from exc
     db.refresh(asset)
     db.refresh(verification_case)
 
