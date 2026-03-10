@@ -1,35 +1,35 @@
-# Veracity System Architecture
+# Veracity Architecture (Phase 1)
 
-The Veracity system has four main layers.
+## Scope
+Phase 1 delivers a verification-first backend foundation for Nigerian land/property onboarding.
 
-## Frontend
+## Implemented modules
 
-The frontend provides a dashboard for users to:
+### 1) API Layer (FastAPI)
+- `POST /api/v1/assets` for initial asset registration
+- `GET /health` service probe
 
-- register assets
-- upload documents
-- manage asset ownership
-- verify asset records
+### 2) Verification Core
+- canonical asset payload construction
+- deterministic SHA-256 fingerprinting
+- duplicate prevention using canonical fingerprint uniqueness
 
-## API Layer
+### 3) Persistence Layer
+- PostgreSQL via SQLAlchemy ORM
+- Alembic-managed schema
+- core entities:
+  - `assets`
+  - `verification_cases`
+  - `attestations`
+  - `document_records`
+  - `audit_events`
 
-Handles:
+### 4) Auditability
+- every registration writes an `asset.registration_submitted` audit event
 
-- authentication
-- asset registration
-- asset queries
-- verification endpoints
-
-## Verification Engine
-
-Core logic responsible for:
-
-- validating asset data
-- generating asset fingerprints
-- creating verification records
-
-## Registry Layer
-
-Stores asset data and verification records.
-
-Future versions may include cryptographic proof systems.
+## Deliberately deferred
+- identity provider integrations (e.g., NIN adapters)
+- document OCR/forensics
+- onchain registry contracts
+- transfer/dispute workflows
+- frontend dashboard
