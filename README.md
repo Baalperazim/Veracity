@@ -2,15 +2,18 @@
 
 Veracity is a verification-first real-world asset (RWA) infrastructure platform, starting with land/property assets in Nigeria.
 
-This repository currently contains **Phase 1 foundation**:
+This repository currently contains **Phase 4 foundation**:
 - FastAPI backend service
 - PostgreSQL persistence with SQLAlchemy 2.x
 - Alembic migrations
 - Deterministic asset fingerprinting from canonicalized asset data
 - Asset registration endpoint that automatically opens a verification case and writes an audit event
-- Pytest coverage for fingerprinting and registration flow
+- Tokenization policy + issuance architecture with eligibility checks
+- Compliance freeze/dispute blocks integrated into issuance gating
+- Transfer restriction policy model for open/whitelist/jurisdiction lock modes
+- Pytest coverage for fingerprinting, registration, and tokenization workflow
 
-## Monorepo structure (Phase 1)
+## Monorepo structure (Phase 4)
 
 ```text
 .
@@ -54,7 +57,7 @@ pip install -r requirements.txt
 pytest
 ```
 
-## API (Phase 1)
+## API (Phase 4)
 
 ### `GET /health`
 Basic service liveness probe.
@@ -90,4 +93,16 @@ Example request:
 
 ## Notes on scope
 
-Phase 1 intentionally does **not** include frontend UX, blockchain contracts, or external Nigerian registry adapters yet. Those are scheduled for subsequent phases after verification-core hardening.
+Phase 4 still intentionally does **not** include frontend UX, production blockchain settlement adapters, or external Nigerian registry integrations. Those are scheduled for subsequent phases after tokenization-core hardening.
+
+
+### `POST /api/v1/assets/{asset_id}/tokenization/issue`
+Creates or updates tokenization policy and attempts issuance.
+
+Behavior:
+- evaluates verification/manual/compliance/fractionalization eligibility
+- blocks issuance when policy constraints are unmet
+- persists issuance identity and fractional token references
+
+### `POST /api/v1/assets/{asset_id}/tokenization/blocks`
+Creates a compliance block (`freeze`, `dispute`, `regulatory_hold`) that prevents issuance while active.
