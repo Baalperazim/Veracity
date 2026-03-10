@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 
-class DecisionStatus(StrEnum):
+class CaseStatus(StrEnum):
     OPEN = "open"
     APPROVED = "approved"
     REJECTED = "rejected"
@@ -19,8 +19,8 @@ class VerificationCase(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     asset_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("assets.id"), nullable=False)
-    status: Mapped[DecisionStatus] = mapped_column(
-        Enum(DecisionStatus, name="decision_status"), nullable=False, default=DecisionStatus.OPEN
+    status: Mapped[CaseStatus] = mapped_column(
+        Enum(CaseStatus, name="case_status"), nullable=False, default=CaseStatus.OPEN
     )
     decision_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     rules_snapshot: Mapped[dict] = mapped_column(JSON, default=dict)
