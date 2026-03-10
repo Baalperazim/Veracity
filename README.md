@@ -1,36 +1,93 @@
 # Veracity
-**Nigeria’s verified RWA tokenization platform on Bags.fm**  
-*Inspired by Psalm 24:1 – “The earth is the LORD'S, and the fulness thereof...”*
 
-Veracity is a no-code platform for tokenizing verified land assets in Nigeria on Bags.fm.
+Veracity is a verification-first real-world asset (RWA) infrastructure platform, starting with land/property assets in Nigeria.
 
-The platform allows users to convert C-of-O land into fractional Solana tokens only after completing mandatory verification steps based on NIN, biometric confirmation, and government land registry checks.
+This repository currently contains **Phase 1 foundation**:
+- FastAPI backend service
+- PostgreSQL persistence with SQLAlchemy 2.x
+- Alembic migrations
+- Deterministic asset fingerprinting from canonicalized asset data
+- Asset registration endpoint that automatically opens a verification case and writes an audit event
+- Pytest coverage for fingerprinting and registration flow
 
-### How it works
-1. Connect Phantom wallet  
-2. Enter NIN  
-3. Upload C-of-O document and timestamped land photo  
-4. Run verification (NIN + biometric + registry)  
-5. System generates IPFS proof and Bags launch script  
-6. Token launches with economic rights only, perpetual royalties (1-5%), and no re-minting  
+## Monorepo structure (Phase 1)
 
-Creator retains full legal ownership of the physical asset under Nigerian law.
+```text
+.
+├── backend/
+│   ├── app/
+│   │   ├── api/routes/
+│   │   ├── core/
+│   │   ├── db/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   └── services/
+│   ├── alembic/
+│   ├── tests/
+│   ├── Dockerfile
+│   └── requirements.txt
+└── docker-compose.yml
+```
 
-### Tech Stack
-- Next.js 15 + TypeScript  
-- Tailwind CSS  
-- Bags.fm SDK  
-- nft.storage (IPFS)  
-- Smile ID / NIMC integration (planned)
+## Local development
 
-### Status
-MVP demo ready for Bags Hackathon submission (March 2026). Nigeria-focused RWA project.
-B.Sc Cybersecurity Final year project, Abiola Ajimobi Technical University
-
-
-## Start
-
-### Install dependencies
+### 1) Start database + API
 
 ```bash
+docker compose up --build
+```
+
+API base URL: `http://localhost:8000`
+
+### 2) Run migrations manually (optional)
+
+```bash
+cd backend
+alembic upgrade head
+```
+
+### 3) Run tests
+
+```bash
+cd backend
 pip install -r requirements.txt
+pytest
+```
+
+## API (Phase 1)
+
+### `GET /health`
+Basic service liveness probe.
+
+### `POST /api/v1/assets`
+Registers a candidate asset for verification.
+
+Behavior:
+- canonicalizes key asset fields
+- computes deterministic SHA-256 fingerprint
+- rejects duplicates by canonical fingerprint
+- writes asset row + verification case + audit event
+
+Example request:
+
+```json
+{
+  "asset_type": "land",
+  "country_code": "NG",
+  "state": "Lagos",
+  "lga": "Ikeja",
+  "locality": "Alausa",
+  "parcel_reference": "IKJ-PLT-8",
+  "area_sqm": "450",
+  "owner_full_name": "Amina Yusuf",
+  "owner_reference": "NIN-0099",
+  "metadata": {
+    "title_number": "LND-23"
+  },
+  "submitted_by": "owner_amina"
+}
+```
+
+## Notes on scope
+
+Phase 1 intentionally does **not** include frontend UX, blockchain contracts, or external Nigerian registry adapters yet. Those are scheduled for subsequent phases after verification-core hardening.
