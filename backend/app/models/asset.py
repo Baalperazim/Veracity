@@ -1,19 +1,19 @@
 import uuid
 from datetime import datetime
-from enum import StrEnum
+import enum
 
-from sqlalchemy import DateTime, Enum, ForeignKey, JSON, String, Text, UniqueConstraint, Uuid, func
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, JSON, String, Text, UniqueConstraint, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 
 
-class AssetType(StrEnum):
+class AssetType(str, enum.Enum):
     LAND = "land"
     PROPERTY = "property"
 
 
-class VerificationStatus(StrEnum):
+class VerificationStatus(str, enum.Enum):
     PENDING = "pending"
     UNDER_REVIEW = "under_review"
     VERIFIED = "verified"
@@ -36,12 +36,14 @@ class Asset(Base):
     owner_reference: Mapped[str] = mapped_column(String(255), nullable=False)
     fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
     canonical_payload: Mapped[dict] = mapped_column(JSON, nullable=False)
-    metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    asset_metadata: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
     current_status: Mapped[VerificationStatus] = mapped_column(
         Enum(VerificationStatus, name="verification_status"),
         nullable=False,
         default=VerificationStatus.PENDING,
     )
+    is_frozen: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    has_active_dispute: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -50,6 +52,7 @@ class Asset(Base):
     verification_cases = relationship("VerificationCase", back_populates="asset", cascade="all, delete-orphan")
     audit_events = relationship("AuditEvent", back_populates="asset", cascade="all, delete-orphan")
     documents = relationship("DocumentRecord", back_populates="asset", cascade="all, delete-orphan")
+    issuance = relationship("TokenIssuance", back_populates="asset", uselist=False, cascade="all, delete-orphan")
 
 
 class DocumentRecord(Base):
@@ -60,7 +63,7 @@ class DocumentRecord(Base):
     document_type: Mapped[str] = mapped_column(String(120), nullable=False)
     document_hash: Mapped[str] = mapped_column(String(128), nullable=False)
     source_reference: Mapped[str] = mapped_column(Text, nullable=True)
-    metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    document_metadata: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     asset = relationship("Asset", back_populates="documents")

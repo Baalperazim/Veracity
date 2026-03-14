@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from enum import StrEnum
+import enum
 
 from sqlalchemy import DateTime, Enum, ForeignKey, JSON, String, Text, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 
-class DecisionStatus(StrEnum):
+class DecisionStatus(str, enum.Enum):
     OPEN = "open"
     APPROVED = "approved"
     REJECTED = "rejected"
