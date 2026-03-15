@@ -1,4 +1,5 @@
 # Veracity Architecture (Phase 4)
+# Veracity Architecture (Phase 1 + Phase 3 Anchoring Baseline)
 
 ## Scope
 Phase 4 extends the verification-first backend with tokenization eligibility and issuance architecture for regulated RWA onboarding.
@@ -69,8 +70,19 @@ Cons:
 
 **Decision:** Dual-layer is the stronger architecture for regulated property RWA use-cases and is now the default policy foundation.
 
+### 5) Blockchain Anchoring (Phase 3 baseline)
+- minimal `AssetRegistry` smart contract for immutable asset anchors
+- deterministic backend anchor payload + hash preparation
+- anchor lifecycle persistence (`prepared` -> `submitted` -> `confirmed`)
+- API support to prepare anchor records and attach tx metadata
+
 ## Deliberately deferred
 - onchain deployment and settlement adapters
 - transfer execution engine and smart-contract hooks
 - block release workflows and case-management UI
 - jurisdiction oracle/provider integrations
+- identity provider integrations (e.g., NIN adapters)
+- document OCR/forensics
+- transfer/dispute workflows
+- fractionalization/token economics
+- frontend dashboard

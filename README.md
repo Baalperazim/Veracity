@@ -3,6 +3,7 @@
 Veracity is a verification-first real-world asset (RWA) infrastructure platform, starting with land/property assets in Nigeria.
 
 This repository currently contains **Phase 4 foundation**:
+This repository currently contains **Phase 1 foundation + Phase 3 anchoring baseline**:
 - FastAPI backend service
 - PostgreSQL persistence with SQLAlchemy 2.x
 - Alembic migrations
@@ -12,6 +13,8 @@ This repository currently contains **Phase 4 foundation**:
 - Compliance freeze/dispute blocks integrated into issuance gating
 - Transfer restriction policy model for open/whitelist/jurisdiction lock modes
 - Pytest coverage for fingerprinting, registration, and tokenization workflow
+- Pytest coverage for fingerprinting and registration flow
+- Minimal blockchain anchor workflow (contract + backend preparation/recording APIs)
 
 ## Monorepo structure (Phase 4)
 
@@ -106,3 +109,4 @@ Behavior:
 
 ### `POST /api/v1/assets/{asset_id}/tokenization/blocks`
 Creates a compliance block (`freeze`, `dispute`, `regulatory_hold`) that prevents issuance while active.
+Current scope still intentionally excludes frontend UX, full transfer flows, and fractionalization. Phase 3 adds only minimal immutable anchoring.

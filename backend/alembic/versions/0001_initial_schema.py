@@ -21,11 +21,11 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     asset_type = sa.Enum("land", "property", name="asset_type")
     verification_status = sa.Enum("pending", "under_review", "verified", "rejected", name="verification_status")
-    decision_status = sa.Enum("open", "approved", "rejected", name="decision_status")
+    case_status = sa.Enum("open", "approved", "rejected", name="case_status")
 
     asset_type.create(op.get_bind(), checkfirst=True)
     verification_status.create(op.get_bind(), checkfirst=True)
-    decision_status.create(op.get_bind(), checkfirst=True)
+    case_status.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "assets",
@@ -53,7 +53,7 @@ def upgrade() -> None:
         "verification_cases",
         sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("asset_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("status", decision_status, nullable=False),
+        sa.Column("status", case_status, nullable=False),
         sa.Column("decision_reason", sa.Text(), nullable=True),
         sa.Column("rules_snapshot", sa.JSON(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
@@ -109,6 +109,6 @@ def downgrade() -> None:
     op.drop_table("verification_cases")
     op.drop_table("assets")
 
-    sa.Enum(name="decision_status").drop(op.get_bind(), checkfirst=True)
+    sa.Enum(name="case_status").drop(op.get_bind(), checkfirst=True)
     sa.Enum(name="verification_status").drop(op.get_bind(), checkfirst=True)
     sa.Enum(name="asset_type").drop(op.get_bind(), checkfirst=True)

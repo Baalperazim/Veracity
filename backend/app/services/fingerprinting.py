@@ -5,8 +5,15 @@ from decimal import Decimal, InvalidOperation
 from app.schemas.asset import AssetRegistrationRequest
 
 
+class CanonicalizationError(ValueError):
+    pass
+
+
 def _normalize_text(value: str) -> str:
-    return " ".join(value.strip().lower().split())
+    normalized = " ".join(value.strip().lower().split())
+    if not normalized:
+        raise CanonicalizationError("text fields must not be blank")
+    return normalized
 
 
 def _normalize_area(value: str) -> str:
@@ -16,14 +23,16 @@ def _normalize_area(value: str) -> str:
     try:
         normalized = Decimal(compact)
     except InvalidOperation as exc:
-        raise ValueError("area_sqm must be numeric or numeric with sqm suffix") from exc
+        raise CanonicalizationError("area_sqm must be numeric or numeric with sqm suffix") from exc
+    if normalized <= 0:
+        raise CanonicalizationError("area_sqm must be greater than zero")
     return str(normalized.normalize())
 
 
 def build_canonical_asset_payload(payload: AssetRegistrationRequest) -> dict:
     return {
         "asset_type": payload.asset_type.value,
-        "country_code": payload.country_code.upper(),
+        "country_code": payload.country_code,
         "state": _normalize_text(payload.state),
         "lga": _normalize_text(payload.lga),
         "locality": _normalize_text(payload.locality),
