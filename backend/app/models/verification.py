@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from enum import StrEnum
+import enum
 
 from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, JSON, String, Text, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -9,6 +9,8 @@ from app.db.base import Base
 
 
 class VerificationCaseStatus(StrEnum):
+class CaseStatus(StrEnum):
+class DecisionStatus(str, enum.Enum):
     OPEN = "open"
     UNDER_REVIEW = "under_review"
     CONFLICTED = "conflicted"
@@ -33,6 +35,8 @@ class VerificationCase(Base):
         Enum(VerificationCaseStatus, name="verification_case_status"),
         nullable=False,
         default=VerificationCaseStatus.OPEN,
+    status: Mapped[CaseStatus] = mapped_column(
+        Enum(CaseStatus, name="case_status"), nullable=False, default=CaseStatus.OPEN
     )
     decision_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     rules_snapshot: Mapped[dict] = mapped_column(JSON, default=dict)
