@@ -31,7 +31,7 @@ def register_asset(db: Session, payload: AssetRegistrationRequest) -> tuple[Asse
         area_sqm=payload.area_sqm,
         owner_full_name=payload.owner_full_name,
         owner_reference=payload.owner_reference,
-        metadata=payload.metadata,
+        asset_metadata=payload.metadata,
         fingerprint=fingerprint,
         canonical_payload=canonical_payload,
     )
