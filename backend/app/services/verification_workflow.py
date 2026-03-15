@@ -2,6 +2,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from uuid import UUID
 
+
 from sqlalchemy.orm import Session
 
 from app.models.verification import Attestation, VerificationCase, VerificationCaseStatus, VerifierRole
@@ -85,34 +86,35 @@ def transition_verification_status(
 
 
 def detect_attestation_conflicts(attestations: list[Attestation]) -> ConflictReport:
-    by_type_and_hash: dict[tuple[str, str], list[Attestation]] = defaultdict(list)
+    by_type_and_hash: dict[tuple[str, str], list[tuple[int, Attestation]]] = defaultdict(list)
     by_type: dict[str, set[str]] = defaultdict(set)
 
-    for attestation in attestations:
+    for index, attestation in enumerate(attestations):
         if attestation.is_revoked:
             continue
-        by_type_and_hash[(attestation.attestation_type, attestation.payload_hash)].append(attestation)
+        by_type_and_hash[(attestation.attestation_type, attestation.payload_hash)].append((index, attestation))
         by_type[attestation.attestation_type].add(attestation.payload_hash)
 
     duplicates: list[UUID] = []
     for entries in by_type_and_hash.values():
         if len(entries) > 1:
-            duplicates.extend([attestation.id for attestation in entries])
+            for index, attestation in entries:
+                duplicates.append(attestation.id or UUID(int=index + 1))
 
     conflicts: list[UUID] = []
     for attestation_type, payload_hashes in by_type.items():
         if len(payload_hashes) <= 1:
             continue
 
-        for attestation in attestations:
+        for index, attestation in enumerate(attestations):
             if attestation.is_revoked:
                 continue
             if attestation.attestation_type == attestation_type:
-                conflicts.append(attestation.id)
+                conflicts.append(attestation.id or UUID(int=index + 1))
 
     return ConflictReport(
-        duplicate_attestation_ids=sorted(set(duplicates)),
-        conflicting_attestation_ids=sorted(set(conflicts)),
+        duplicate_attestation_ids=duplicates,
+        conflicting_attestation_ids=conflicts,
     )
 
 

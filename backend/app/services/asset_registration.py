@@ -5,10 +5,9 @@ from sqlalchemy.orm import Session
 from app.models.asset import Asset
 from app.models.audit import AuditEvent
 from app.models.verification import VerificationCase
-from app.services.verification_workflow import create_verification_case
-from app.models.verification import CaseStatus, VerificationCase
 from app.schemas.asset import AssetRegistrationRequest
 from app.services.fingerprinting import build_canonical_asset_payload, generate_asset_fingerprint
+from app.services.verification_workflow import create_verification_case
 
 
 class DuplicateAssetError(Exception):
@@ -33,7 +32,6 @@ def register_asset(db: Session, payload: AssetRegistrationRequest) -> tuple[Asse
         area_sqm=payload.area_sqm,
         owner_full_name=payload.owner_full_name,
         owner_reference=payload.owner_reference,
-        metadata_json=payload.metadata,
         asset_metadata=payload.metadata,
         fingerprint=fingerprint,
         canonical_payload=canonical_payload,
@@ -43,11 +41,6 @@ def register_asset(db: Session, payload: AssetRegistrationRequest) -> tuple[Asse
 
     verification_case = create_verification_case(db, asset_id=asset.id)
 
-    verification_case = VerificationCase(
-        asset=asset,
-        status=CaseStatus.OPEN,
-        rules_snapshot={"version": "v1", "name": "base_registration"},
-    )
     audit_event = AuditEvent(
         asset=asset,
         actor_role="owner",
@@ -56,7 +49,7 @@ def register_asset(db: Session, payload: AssetRegistrationRequest) -> tuple[Asse
         event_payload={"fingerprint": fingerprint},
     )
 
-    db.add_all([asset, verification_case, audit_event])
+    db.add(audit_event)
     try:
         db.commit()
     except IntegrityError as exc:
