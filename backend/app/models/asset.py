@@ -6,6 +6,7 @@ import enum
 from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, JSON, String, Text, UniqueConstraint, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.enum_compat import StrEnum
 from app.db.base import Base
 
 
@@ -56,6 +57,13 @@ class Asset(Base):
     verification_cases = relationship("VerificationCase", back_populates="asset", cascade="all, delete-orphan")
     audit_events = relationship("AuditEvent", back_populates="asset", cascade="all, delete-orphan")
     documents = relationship("DocumentRecord", back_populates="asset", cascade="all, delete-orphan")
+    tokenization_policy = relationship(
+        "TokenizationPolicy", back_populates="asset", cascade="all, delete-orphan", uselist=False
+    )
+    tokenization_issuance = relationship(
+        "TokenizationIssuance", back_populates="asset", cascade="all, delete-orphan", uselist=False
+    )
+    compliance_blocks = relationship("AssetComplianceBlock", back_populates="asset", cascade="all, delete-orphan")
     anchors = relationship("AssetAnchor", back_populates="asset", cascade="all, delete-orphan")
     issuance = relationship("TokenIssuance", back_populates="asset", uselist=False, cascade="all, delete-orphan")
 
