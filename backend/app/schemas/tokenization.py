@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.tokenization import (
     ComplianceBlockType,
@@ -21,6 +21,29 @@ class TokenizationPolicyInput(BaseModel):
     whitelisted_wallets: list[str] = Field(default_factory=list)
     metadata: dict = Field(default_factory=dict)
 
+    @field_validator("min_verification_status")
+    @classmethod
+    def normalize_verification_status(cls, value: str) -> str:
+        return value.strip().lower()
+
+    @field_validator("allowed_jurisdictions")
+    @classmethod
+    def normalize_jurisdictions(cls, value: list[str]) -> list[str]:
+        return sorted({item.strip().upper() for item in value if item.strip()})
+
+    @field_validator("whitelisted_wallets")
+    @classmethod
+    def validate_wallets(cls, value: list[str]) -> list[str]:
+        normalized: list[str] = []
+        for wallet in value:
+            candidate = wallet.strip().lower()
+            if len(candidate) != 42 or not candidate.startswith("0x"):
+                raise ValueError("wallet addresses must be 42-character 0x-prefixed values")
+            if any(ch not in "0123456789abcdef" for ch in candidate[2:]):
+                raise ValueError("wallet addresses must be hexadecimal")
+            normalized.append(candidate)
+        return sorted(set(normalized))
+
 
 class TokenizationIssueRequest(BaseModel):
     policy: TokenizationPolicyInput = Field(default_factory=TokenizationPolicyInput)
@@ -32,6 +55,19 @@ class TokenizationIssueRequest(BaseModel):
     fractional_token_class: str | None = Field(default=None, min_length=1, max_length=120)
     fractional_total_supply: int | None = Field(default=None, ge=1)
     issuance_reference: str | None = Field(default=None, min_length=2, max_length=255)
+
+    @field_validator("identity_contract", "fractional_contract")
+    @classmethod
+    def validate_contract_address(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+
+        candidate = value.strip().lower()
+        if len(candidate) != 42 or not candidate.startswith("0x"):
+            raise ValueError("contract address must be a 42-character 0x-prefixed value")
+        if any(ch not in "0123456789abcdef" for ch in candidate[2:]):
+            raise ValueError("contract address must be hexadecimal")
+        return candidate
 
 
 class TokenizationIssueResponse(BaseModel):

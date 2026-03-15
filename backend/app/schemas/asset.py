@@ -9,6 +9,9 @@ from app.models.anchor import AnchorStatus
 from app.models.asset import AssetType, VerificationStatus
 
 
+HEX_LOWER = set("0123456789abcdef")
+
+
 class AssetRegistrationRequest(BaseModel):
     asset_type: AssetType
     country_code: str = Field(min_length=2, max_length=2, description="ISO country code")
@@ -83,6 +86,16 @@ class AnchorPreparationRequest(BaseModel):
     registry_address: str = Field(min_length=42, max_length=64)
     prepared_by: str = Field(min_length=2, max_length=120)
 
+    @field_validator("registry_address")
+    @classmethod
+    def validate_registry_address(cls, value: str) -> str:
+        candidate = value.strip().lower()
+        if len(candidate) != 42 or not candidate.startswith("0x"):
+            raise ValueError("registry_address must be a 42-character 0x-prefixed value")
+        if any(ch not in HEX_LOWER for ch in candidate[2:]):
+            raise ValueError("registry_address must be hexadecimal")
+        return candidate
+
 
 class AnchorPreparationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -100,6 +113,16 @@ class AnchorPreparationResponse(BaseModel):
 class AnchorRecordRequest(BaseModel):
     tx_hash: str = Field(min_length=66, max_length=66)
     block_number: int = Field(gt=0)
+
+    @field_validator("tx_hash")
+    @classmethod
+    def validate_tx_hash(cls, value: str) -> str:
+        candidate = value.strip().lower()
+        if len(candidate) != 66 or not candidate.startswith("0x"):
+            raise ValueError("tx_hash must be a 66-character 0x-prefixed value")
+        if any(ch not in HEX_LOWER for ch in candidate[2:]):
+            raise ValueError("tx_hash must be hexadecimal")
+        return candidate
 
 
 class AnchorRecordResponse(BaseModel):
