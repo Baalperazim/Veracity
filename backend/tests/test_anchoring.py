@@ -73,3 +73,17 @@ def test_contract_and_backend_signature_assumptions_stay_aligned() -> None:
 
     assert ASSET_REGISTRY_FUNCTION_SIGNATURE in source_text
     assert ASSET_REGISTRY_EVENT_SIGNATURE in source_text
+
+
+def test_prepare_anchor_rejects_invalid_registry_address(client) -> None:
+    asset = _create_asset(client)
+
+    prepare = client.post(
+        f"/api/v1/assets/{asset['id']}/anchors/prepare",
+        json={
+            "chain_id": 11155111,
+            "registry_address": "registry-address",
+            "prepared_by": "system_anchor_worker",
+        },
+    )
+    assert prepare.status_code == 422

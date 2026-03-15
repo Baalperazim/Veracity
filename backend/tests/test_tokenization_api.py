@@ -31,13 +31,13 @@ def test_tokenization_issue_requires_verified_and_manual_approval(client, test_s
             "requires_manual_approval": True,
             "allows_fractionalization": True,
             "transfer_restriction_mode": "whitelist_only",
-            "whitelisted_wallets": ["0xabc"],
+            "whitelisted_wallets": ["0x" + "c" * 40],
         },
         "requested_by": "compliance_admin",
         "manual_approved": False,
-        "identity_contract": "0xidentity",
+        "identity_contract": "0x" + "1" * 40,
         "identity_token_id": "1",
-        "fractional_contract": "0xfractional",
+        "fractional_contract": "0x" + "2" * 40,
         "fractional_token_class": "A",
         "fractional_total_supply": 1000,
     }
@@ -84,11 +84,39 @@ def test_freeze_block_prevents_token_issuance(client, test_session):
         },
         "requested_by": "tokenization_bot",
         "manual_approved": False,
-        "identity_contract": "0xidentity2",
+        "identity_contract": "0x" + "3" * 40,
         "identity_token_id": "11",
-        "fractional_contract": "0xfractional2",
+        "fractional_contract": "0x" + "4" * 40,
         "fractional_token_class": "A",
         "fractional_total_supply": 500,
     }
     issuance = client.post(f"/api/v1/assets/{asset_id}/tokenization/issue", json=issue_payload)
     assert issuance.status_code == 409
+
+
+def test_tokenization_issue_rejects_invalid_contract_addresses(client, test_session):
+    asset_id = _register_asset(client)
+
+    asset = test_session.get(Asset, asset_id)
+    asset.current_status = VerificationStatus.VERIFIED
+    test_session.commit()
+
+    issue_payload = {
+        "policy": {
+            "tokenization_model": "dual_layer",
+            "requires_manual_approval": False,
+            "allows_fractionalization": True,
+            "transfer_restriction_mode": "whitelist_only",
+            "whitelisted_wallets": ["0x" + "a" * 40],
+        },
+        "requested_by": "compliance_admin",
+        "manual_approved": False,
+        "identity_contract": "not-an-address",
+        "identity_token_id": "1",
+        "fractional_contract": "0x" + "b" * 40,
+        "fractional_token_class": "A",
+        "fractional_total_supply": 1000,
+    }
+
+    invalid = client.post(f"/api/v1/assets/{asset_id}/tokenization/issue", json=issue_payload)
+    assert invalid.status_code == 422
