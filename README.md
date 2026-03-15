@@ -2,13 +2,14 @@
 
 Veracity is a verification-first real-world asset (RWA) infrastructure platform, starting with land/property assets in Nigeria.
 
-This repository currently contains **Phase 1 foundation**:
+This repository currently contains **Phase 1 foundation + Phase 3 anchoring baseline**:
 - FastAPI backend service
 - PostgreSQL persistence with SQLAlchemy 2.x
 - Alembic migrations
 - Deterministic asset fingerprinting from canonicalized asset data
 - Asset registration endpoint that automatically opens a verification case and writes an audit event
 - Pytest coverage for fingerprinting and registration flow
+- Minimal blockchain anchor workflow (contract + backend preparation/recording APIs)
 
 ## Monorepo structure (Phase 1)
 
@@ -90,4 +91,4 @@ Example request:
 
 ## Notes on scope
 
-Phase 1 intentionally does **not** include frontend UX, blockchain contracts, or external Nigerian registry adapters yet. Those are scheduled for subsequent phases after verification-core hardening.
+Current scope still intentionally excludes frontend UX, full transfer flows, and fractionalization. Phase 3 adds only minimal immutable anchoring.

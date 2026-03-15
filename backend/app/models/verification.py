@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from enum import Enum as PyEnum
 import enum
 
 from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, JSON, String, Text, Uuid, func
@@ -8,6 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 
+class DecisionStatus(str, PyEnum):
 class VerificationCaseStatus(StrEnum):
 class CaseStatus(StrEnum):
 class DecisionStatus(str, enum.Enum):

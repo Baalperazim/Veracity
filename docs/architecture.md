@@ -1,4 +1,4 @@
-# Veracity Architecture (Phase 1)
+# Veracity Architecture (Phase 1 + Phase 3 Anchoring Baseline)
 
 ## Scope
 Phase 1 delivers a verification-first backend foundation for Nigerian land/property onboarding.
@@ -27,9 +27,15 @@ Phase 1 delivers a verification-first backend foundation for Nigerian land/prope
 ### 4) Auditability
 - every registration writes an `asset.registration_submitted` audit event
 
+### 5) Blockchain Anchoring (Phase 3 baseline)
+- minimal `AssetRegistry` smart contract for immutable asset anchors
+- deterministic backend anchor payload + hash preparation
+- anchor lifecycle persistence (`prepared` -> `submitted` -> `confirmed`)
+- API support to prepare anchor records and attach tx metadata
+
 ## Deliberately deferred
 - identity provider integrations (e.g., NIN adapters)
 - document OCR/forensics
-- onchain registry contracts
 - transfer/dispute workflows
+- fractionalization/token economics
 - frontend dashboard
