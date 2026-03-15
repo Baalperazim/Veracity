@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 
 from app.models.asset import Asset
 from app.models.audit import AuditEvent
+from app.models.verification import VerificationCase
+from app.services.verification_workflow import create_verification_case
 from app.models.verification import CaseStatus, VerificationCase
 from app.schemas.asset import AssetRegistrationRequest
 from app.services.fingerprinting import build_canonical_asset_payload, generate_asset_fingerprint
@@ -35,6 +37,11 @@ def register_asset(db: Session, payload: AssetRegistrationRequest) -> tuple[Asse
         fingerprint=fingerprint,
         canonical_payload=canonical_payload,
     )
+    db.add(asset)
+    db.flush()
+
+    verification_case = create_verification_case(db, asset_id=asset.id)
+
     verification_case = VerificationCase(
         asset=asset,
         status=CaseStatus.OPEN,
