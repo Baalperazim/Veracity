@@ -11,7 +11,9 @@ from app.db.base import Base
 class VerificationCaseStatus(str, enum.Enum):
     OPEN = "open"
     UNDER_REVIEW = "under_review"
+    NEEDS_INFORMATION = "needs_information"
     CONFLICTED = "conflicted"
+    DISPUTED = "disputed"
     APPROVED = "approved"
     REJECTED = "rejected"
     ISSUANCE_READY = "issuance_ready"
@@ -35,6 +37,12 @@ class VerificationCase(Base):
         default=VerificationCaseStatus.OPEN,
     )
     decision_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    info_request_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    conflict_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    dispute_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    assigned_reviewer_id: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    assigned_reviewer_role: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    claimed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     rules_snapshot: Mapped[dict] = mapped_column(JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -43,6 +51,9 @@ class VerificationCase(Base):
 
     asset = relationship("Asset", back_populates="verification_cases")
     attestations = relationship("Attestation", back_populates="verification_case", cascade="all, delete-orphan")
+    documents = relationship(
+        "VerificationDocument", back_populates="verification_case", cascade="all, delete-orphan"
+    )
 
 
 class Attestation(Base):
@@ -65,3 +76,22 @@ class Attestation(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     verification_case = relationship("VerificationCase", back_populates="attestations")
+
+
+class VerificationDocument(Base):
+    __tablename__ = "verification_documents"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    asset_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("assets.id"), nullable=False)
+    verification_case_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("verification_cases.id"), nullable=False
+    )
+    document_type: Mapped[str] = mapped_column(String(120), nullable=False)
+    storage_pointer: Mapped[str] = mapped_column(Text, nullable=False)
+    submitter_id: Mapped[str] = mapped_column(String(120), nullable=False)
+    submitter_role: Mapped[str] = mapped_column(String(80), nullable=False)
+    reviewer_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    metadata_json: Mapped[dict] = mapped_column("metadata", JSON, default=dict)
+    submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    verification_case = relationship("VerificationCase", back_populates="documents")
