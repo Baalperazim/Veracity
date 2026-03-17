@@ -12,7 +12,7 @@ from app.models.tokenization import (
     TokenizationPolicy,
     TransferRestrictionMode,
 )
-from app.models.verification import Attestation, VerificationCase, VerificationCaseStatus, VerifierRole
+from app.models.verification import Attestation, VerificationCase, VerificationCaseStatus, VerificationDocument, VerifierRole
 
 __all__ = [
     "AssetAnchor",
@@ -26,6 +26,7 @@ __all__ = [
     "VerificationCaseStatus",
     "VerifierRole",
     "Attestation",
+    "VerificationDocument",
     "TokenizationPolicy",
     "TokenizationModel",
     "TransferRestrictionMode",
